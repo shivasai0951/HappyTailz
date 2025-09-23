@@ -1,0 +1,953 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "HappyTailz API",
+    "version": "1.0.0",
+    "description": "Local Swagger documentation for HappyTailz backend"
+  },
+  "servers": [
+    { "url": "http://localhost:3000", "description": "Local" },
+    { "url": "https://happytailz-9qf9.onrender.com/", "description": "Render" }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "role": { "type": "string", "enum": ["admin", "driver", "user"] },
+          "imageUrl": { "type": "string", "format": "uri", "description": "Direct URL of the user's image" }
+        }
+      },
+      "Pet": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "ownerId": { "type": "string" },
+          "name": { "type": "string" },
+          "species": { "type": "string" },
+          "breed": { "type": "string" },
+          "age": { "type": "number" },
+          "gender": { "type": "string" },
+          "imageUrl": { "type": "string", "format": "uri", "description": "Direct URL of the pet image" }
+        }
+      },
+      "Grooming": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "services": { "type": "array", "items": { "type": "string" } },
+          "price": { "type": "number" },
+          "durationMinutes": { "type": "integer" },
+          "active": { "type": "boolean" },
+          "imageUrl": { "type": "string", "format": "uri", "description": "Direct URL of the grooming image" }
+        }
+      },
+      "Breeding": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "active": { "type": "boolean" },
+          "imageUrl": { "type": "string", "format": "uri", "description": "Direct URL of the breeding image" }
+        }
+      },
+      "Hospital": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "address": { "type": "string" },
+          "phone": { "type": "string" },
+          "services": { "type": "array", "items": { "type": "string" } },
+          "active": { "type": "boolean" },
+          "imageUrl": { "type": "string", "format": "uri", "description": "Direct URL of the hospital image" }
+        }
+      },
+      "Plan": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string", "enum": ["1 day", "1 week", "1 month"] },
+          "durationDays": { "type": "integer" },
+          "price": { "type": "number" }
+        }
+      },
+      "UserPlan": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "user": { "type": "string" },
+          "plan": { "$ref": "#\/components\/schemas\/Plan" },
+          "startDate": { "type": "string", "format": "date-time" },
+          "endDate": { "type": "string", "format": "date-time" },
+          "status": { "type": "string", "enum": ["active", "expired", "cancelled"] }
+        }
+      },
+      "WalkingRequest": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "user": { "type": "string" },
+          "pet": { "type": "string" },
+          "driver": { "type": "string" },
+          "plan": { "type": "string" },
+          "scheduleAt": { "type": "string", "format": "date-time" },
+          "location": { "type": "string" },
+          "notes": { "type": "string" },
+          "status": { "type": "string", "enum": ["requested", "approved", "assigned", "completed", "cancelled"] }
+        }
+      }
+    }
+  },
+  "tags": [
+    { "name": "Auth" },
+    { "name": "Pets" },
+    { "name": "Plans" },
+    { "name": "UserPlans" },
+    { "name": "WalkingRequests" },
+    { "name": "Dashboard" },
+    { "name": "Profile" },
+    { "name": "Admin - Breeding" },
+    { "name": "Admin - Hospitals" },
+    { "name": "Admin - Grooming" },
+    { "name": "Admin - Plans" },
+    { "name": "Admin - Users" },
+    { "name": "Admin - Dashboard" }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health check",
+        "tags": ["Misc"],
+        "responses": {
+          "200": { "description": "OK" }
+        }
+      }
+    },
+    "/api/auth/register": {
+      "post": {
+        "summary": "Register user",
+        "tags": ["Auth"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "email", "password"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string", "minLength": 6 },
+                  "role": { "type": "string", "enum": ["admin", "driver", "user"] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Created" },
+          "409": { "description": "Email exists" }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "summary": "Login",
+        "tags": ["Auth"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "OK" }, "401": { "description": "Invalid" } }
+      }
+    },
+    "/api/pets": {
+      "get": {
+        "summary": "List my pets",
+        "tags": ["Pets"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "OK" } }
+      },
+      "post": {
+        "summary": "Create pet",
+        "tags": ["Pets"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "species"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "species": { "type": "string" },
+                  "breed": { "type": "string" },
+                  "age": { "type": "number" },
+                  "gender": { "type": "string" },
+                  "image": { "type": "string", "format": "binary", "description": "Image file upload (field name: image)" },
+                  "imageUrl": { "type": "string", "format": "uri", "description": "Optional direct image URL instead of file" }
+                }
+              }
+            },
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "species"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "species": { "type": "string" },
+                  "breed": { "type": "string" },
+                  "age": { "type": "number" },
+                  "gender": { "type": "string" },
+                  "imageUrl": { "type": "string", "format": "uri" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Created" } }
+      }
+    },
+    "/api/pets/{id}": {
+      "parameters": [
+        { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+      ],
+      "put": {
+        "summary": "Update my pet",
+        "tags": ["Pets"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "species": { "type": "string" },
+                  "breed": { "type": "string" },
+                  "age": { "type": "number" },
+                  "gender": { "type": "string" },
+                  "image": { "type": "string", "format": "binary" },
+                  "imageUrl": { "type": "string", "format": "uri" }
+                }
+              }
+            },
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Pet" }
+            }
+          }
+        },
+        "responses": { "200": { "description": "OK" }, "404": { "description": "Not Found" } }
+      },
+      "delete": {
+        "summary": "Delete my pet",
+        "tags": ["Pets"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Deleted" }, "404": { "description": "Not Found" } }
+      }
+    },
+    "/api/dashboard": {
+      "get": {
+        "summary": "User dashboard",
+        "description": "Shows user's latest plan with isActive flag, pets summary, upcoming walking requests, and completed count.",
+        "tags": ["Dashboard"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "hasPlan": { "type": "boolean" },
+                    "plan": { "type": "object", "properties": { "isActive": { "type": "boolean" } } },
+                    "pets": { "type": "object", "properties": { "count": { "type": "integer" }, "items": { "type": "array", "items": { "$ref": "#/components/schemas/Pet" } } } },
+                    "walkingRequests": { "type": "object", "properties": { "upcoming": { "type": "array" }, "completedCount": { "type": "integer" } } }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/userplans": {
+      "get": {
+        "summary": "List my user plans",
+        "tags": ["UserPlans"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "OK" } }
+      },
+      "post": {
+        "summary": "Subscribe to a plan",
+        "tags": ["UserPlans"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["planId"],
+                "properties": {
+                  "planId": { "type": "string" },
+                  "startDate": { "type": "string", "format": "date-time" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Created" } }
+      }
+    },
+    "/api/walkingrequests": {
+      "post": {
+        "summary": "Create walking request",
+        "tags": ["WalkingRequests"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["pet", "scheduleAt"],
+                "properties": {
+                  "pet": { "type": "string" },
+                  "plan": { "type": "string" },
+                  "scheduleAt": { "type": "string", "format": "date-time" },
+                  "location": { "type": "string" },
+                  "notes": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Created" } }
+      }
+    },
+    "/api/walkingrequests/{id}/approve": {
+      "parameters": [
+        { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+      ],
+      "post": {
+        "summary": "Approve a walking request (admin)",
+        "tags": ["WalkingRequests"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Approved" }, "404": { "description": "Not Found" } }
+      }
+    },
+    "/api/walkingrequests/{id}/assign": {
+      "parameters": [
+        { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+      ],
+      "post": {
+        "summary": "Assign a driver to a walking request (admin)",
+        "tags": ["WalkingRequests"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["driver"],
+                "properties": {
+                  "driver": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Assigned" }, "404": { "description": "Not Found" } }
+      }
+    },
+    "/api/walkingrequests/{id}/complete": {
+      "parameters": [
+        { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+      ],
+      "post": {
+        "summary": "Mark walking request as completed (driver)",
+        "tags": ["WalkingRequests"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Completed" }, "404": { "description": "Not Found" } }
+      }
+    },
+    "/api/walkingrequests/me": {
+      "get": {
+        "summary": "List my walking requests",
+        "tags": ["WalkingRequests"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/profile": {
+      "get": {
+        "summary": "Get my profile",
+        "tags": ["Profile"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "OK" }, "404": { "description": "Not Found" } }
+      },
+      "put": {
+        "summary": "Update my profile",
+        "tags": ["Profile"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "phone": { "type": "string" },
+                  "address": { "type": "string" },
+                  "image": { "type": "string", "format": "binary" },
+                  "imageUrl": { "type": "string", "format": "uri" }
+                }
+              }
+            },
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "phone": { "type": "string" },
+                  "address": { "type": "string" },
+                  "imageUrl": { "type": "string", "format": "uri" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "OK" }, "404": { "description": "Not Found" } }
+      }
+    },
+    "/api/profile/password": {
+      "put": {
+        "summary": "Change my password",
+        "tags": ["Profile"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["oldPassword", "newPassword"],
+                "properties": {
+                  "oldPassword": { "type": "string" },
+                  "newPassword": { "type": "string", "minLength": 6 }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "OK" }, "400": { "description": "Bad Request" }, "404": { "description": "Not Found" } }
+      }
+    },
+    "/api/admin/breeding": {
+      "get": { "summary": "List breeding", "tags": ["Admin - Breeding"], "security": [{ "bearerAuth": [] }], "responses": { "200": { "description": "OK" } } },
+      "post": {
+        "summary": "Create breeding",
+        "tags": ["Admin - Breeding"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "description": { "type": "string" },
+                  "active": { "type": "boolean" },
+                  "image": { "type": "string", "format": "binary" },
+                  "imageUrl": { "type": "string", "format": "uri" }
+                }
+              }
+            },
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "description": { "type": "string" },
+                  "active": { "type": "boolean" },
+                  "imageUrl": { "type": "string", "format": "uri" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Created" } }
+      }
+    },
+    "/api/admin/breeding/{id}": {
+      "parameters": [
+        { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+      ],
+      "put": {
+        "summary": "Update breeding",
+        "tags": ["Admin - Breeding"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "description": { "type": "string" },
+                  "active": { "type": "boolean" },
+                  "image": { "type": "string", "format": "binary" },
+                  "imageUrl": { "type": "string", "format": "uri" }
+                }
+              }
+            },
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "description": { "type": "string" },
+                  "active": { "type": "boolean" },
+                  "imageUrl": { "type": "string", "format": "uri" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "OK" }, "404": { "description": "Not Found" } }
+      },
+      "delete": { "summary": "Delete breeding", "tags": ["Admin - Breeding"], "security": [{ "bearerAuth": [] }], "responses": { "200": { "description": "Deleted" }, "404": { "description": "Not Found" } } }
+    },
+    "/api/admin/hospitals": {
+      "get": { "summary": "List hospitals", "tags": ["Admin - Hospitals"], "security": [{ "bearerAuth": [] }], "responses": { "200": { "description": "OK" } } },
+      "post": {
+        "summary": "Create hospital",
+        "tags": ["Admin - Hospitals"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "address"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "address": { "type": "string" },
+                  "phone": { "type": "string" },
+                  "services": { "type": "array", "items": { "type": "string" } },
+                  "active": { "type": "boolean" },
+                  "image": { "type": "string", "format": "binary" },
+                  "imageUrl": { "type": "string", "format": "uri" }
+                }
+              }
+            },
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "address"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "address": { "type": "string" },
+                  "phone": { "type": "string" },
+                  "services": { "type": "array", "items": { "type": "string" } },
+                  "active": { "type": "boolean" },
+                  "imageUrl": { "type": "string", "format": "uri" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Created" } }
+      }
+    },
+    "/api/admin/hospitals/{id}": {
+      "parameters": [
+        { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+      ],
+      "put": {
+        "summary": "Update hospital",
+        "tags": ["Admin - Hospitals"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "address": { "type": "string" },
+                  "phone": { "type": "string" },
+                  "services": { "type": "array", "items": { "type": "string" } },
+                  "active": { "type": "boolean" },
+                  "image": { "type": "string", "format": "binary" },
+                  "imageUrl": { "type": "string", "format": "uri" }
+                }
+              }
+            },
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "address": { "type": "string" },
+                  "phone": { "type": "string" },
+                  "services": { "type": "array", "items": { "type": "string" } },
+                  "active": { "type": "boolean" },
+                  "imageUrl": { "type": "string", "format": "uri" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "OK" }, "404": { "description": "Not Found" } }
+      },
+      "delete": { "summary": "Delete hospital", "tags": ["Admin - Hospitals"], "security": [{ "bearerAuth": [] }], "responses": { "200": { "description": "Deleted" }, "404": { "description": "Not Found" } } }
+    },
+    "/api/admin/grooming": {
+      "get": { "summary": "List grooming", "tags": ["Admin - Grooming"], "security": [{ "bearerAuth": [] }], "responses": { "200": { "description": "OK" } } },
+      "post": {
+        "summary": "Create grooming",
+        "tags": ["Admin - Grooming"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "price"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "services": { "type": "array", "items": { "type": "string" } },
+                  "price": { "type": "number" },
+                  "durationMinutes": { "type": "integer" },
+                  "active": { "type": "boolean" },
+                  "image": { "type": "string", "format": "binary" },
+                  "imageUrl": { "type": "string", "format": "uri" }
+                }
+              }
+            },
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "price"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "services": { "type": "array", "items": { "type": "string" } },
+                  "price": { "type": "number" },
+                  "durationMinutes": { "type": "integer" },
+                  "active": { "type": "boolean" },
+                  "imageUrl": { "type": "string", "format": "uri" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Created" } }
+      }
+    },
+    "/api/admin/grooming/{id}": {
+      "parameters": [
+        { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+      ],
+      "put": {
+        "summary": "Update grooming",
+        "tags": ["Admin - Grooming"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "services": { "type": "array", "items": { "type": "string" } },
+                  "price": { "type": "number" },
+                  "durationMinutes": { "type": "integer" },
+                  "active": { "type": "boolean" },
+                  "image": { "type": "string", "format": "binary" },
+                  "imageUrl": { "type": "string", "format": "uri" }
+                }
+              }
+            },
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "services": { "type": "array", "items": { "type": "string" } },
+                  "price": { "type": "number" },
+                  "durationMinutes": { "type": "integer" },
+                  "active": { "type": "boolean" },
+                  "imageUrl": { "type": "string", "format": "uri" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "OK" }, "404": { "description": "Not Found" } }
+      },
+      "delete": { "summary": "Delete grooming", "tags": ["Admin - Grooming"], "security": [{ "bearerAuth": [] }], "responses": { "200": { "description": "Deleted" }, "404": { "description": "Not Found" } } }
+    },
+    "/api/admin/plans": {
+      "get": { "summary": "List plans", "tags": ["Admin - Plans"], "responses": { "200": { "description": "OK" } } },
+      "post": {
+        "summary": "Create plan",
+        "tags": ["Admin - Plans"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "durationDays", "price"],
+                "properties": {
+                  "name": { "type": "string", "enum": ["1 day", "1 week", "1 month"] },
+                  "durationDays": { "type": "integer" },
+                  "price": { "type": "number" },
+                  "description": { "type": "string" },
+                  "active": { "type": "boolean" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Created" } }
+      }
+    },
+    "/api/admin/plans/{id}": {
+      "parameters": [
+        { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+      ],
+      "put": {
+        "summary": "Update plan",
+        "tags": ["Admin - Plans"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string", "enum": ["1 day", "1 week", "1 month"] },
+                  "durationDays": { "type": "integer" },
+                  "price": { "type": "number" },
+                  "description": { "type": "string" },
+                  "active": { "type": "boolean" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "OK" }, "404": { "description": "Not Found" } }
+      },
+      "delete": { "summary": "Delete plan", "tags": ["Admin - Plans"], "security": [{ "bearerAuth": [] }], "responses": { "200": { "description": "Deleted" }, "404": { "description": "Not Found" } } }
+    },
+    "/api/admin/users": {
+      "get": {
+        "summary": "List all users",
+        "tags": ["Admin - Users"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "role", "in": "query", "schema": { "type": "string", "enum": ["admin", "driver", "user"] } },
+          { "name": "q", "in": "query", "schema": { "type": "string" }, "description": "Search by name/email" }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "_id": { "type": "string" },
+                      "name": { "type": "string" },
+                      "email": { "type": "string" },
+                      "role": { "type": "string" },
+                      "activePlan": { "type": "object", "nullable": true }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create user",
+        "tags": ["Admin - Users"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "email", "password"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string", "minLength": 6 },
+                  "role": { "type": "string", "enum": ["admin", "driver", "user" ] },
+                  "phone": { "type": "string" },
+                  "address": { "type": "string" },
+                  "image": { "type": "string", "format": "binary" },
+                  "imageUrl": { "type": "string", "format": "uri" }
+                }
+              }
+            },
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "email", "password"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string", "minLength": 6 },
+                  "role": { "type": "string", "enum": ["admin", "driver", "user" ] },
+                  "phone": { "type": "string" },
+                  "address": { "type": "string" },
+                  "imageUrl": { "type": "string", "format": "uri" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Created" }, "409": { "description": "Email exists" } }
+      }
+    },
+    "/api/admin/users/{id}": {
+      "parameters": [
+        { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+      ],
+      "get": {
+        "summary": "Get user by id",
+        "tags": ["Admin - Users"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "_id": { "type": "string" },
+                    "name": { "type": "string" },
+                    "email": { "type": "string" },
+                    "role": { "type": "string" },
+                    "activePlan": { "type": "object", "nullable": true }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Not Found" }
+        }
+      },
+      "put": {
+        "summary": "Update user",
+        "tags": ["Admin - Users"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string", "minLength": 6 },
+                  "role": { "type": "string", "enum": ["admin", "driver", "user"] },
+                  "phone": { "type": "string" },
+                  "address": { "type": "string" },
+                  "image": { "type": "string", "format": "binary" },
+                  "imageUrl": { "type": "string", "format": "uri" }
+                }
+              }
+            },
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string", "minLength": 6 },
+                  "role": { "type": "string", "enum": ["admin", "driver", "user"] },
+                  "phone": { "type": "string" },
+                  "address": { "type": "string" },
+                  "imageUrl": { "type": "string", "format": "uri" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "OK" }, "404": { "description": "Not Found" } }
+      },
+      "delete": { "summary": "Delete user", "tags": ["Admin - Users"], "security": [{ "bearerAuth": [] }], "responses": { "200": { "description": "Deleted" }, "404": { "description": "Not Found" } } }
+    },
+    "/api/admin/dashboard": {
+      "get": {
+        "summary": "Admin dashboard summary",
+        "description": "High-level counts: users by role, pets, active subscriptions, walking requests by status, and recent users.",
+        "tags": ["Admin - Dashboard"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/admin/dashboard/plan-stats": {
+      "get": {
+        "summary": "Plan subscription stats",
+        "description": "Counts how many user plan subscriptions were created in the period, grouped by plan name.",
+        "tags": ["Admin - Dashboard"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "period", "in": "query", "schema": { "type": "string", "enum": ["day", "week", "month" ] }, "description": "Defaults to month" }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      }
+    }
+  }
+}
