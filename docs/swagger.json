@@ -38,7 +38,8 @@
           "breed": { "type": "string" },
           "age": { "type": "number" },
           "gender": { "type": "string" },
-          "imageUrl": { "type": "string", "format": "uri", "description": "Direct URL of the pet image" }
+          "imageUrl": { "type": "string", "format": "uri", "description": "Direct URL of the pet image" },
+          "showInBreeding": { "type": "boolean", "description": "Whether this pet should appear in the public breeding list" }
         }
       },
       "Grooming": {
@@ -119,6 +120,9 @@
     { "name": "WalkingRequests" },
     { "name": "Dashboard" },
     { "name": "Profile" },
+    { "name": "Hospitals" },
+    { "name": "Grooming" },
+    { "name": "Breeding" },
     { "name": "Admin - Breeding" },
     { "name": "Admin - Hospitals" },
     { "name": "Admin - Grooming" },
@@ -210,7 +214,8 @@
                   "age": { "type": "number" },
                   "gender": { "type": "string" },
                   "image": { "type": "string", "format": "binary", "description": "Image file upload (field name: image)" },
-                  "imageUrl": { "type": "string", "format": "uri", "description": "Optional direct image URL instead of file" }
+                  "imageUrl": { "type": "string", "format": "uri", "description": "Optional direct image URL instead of file" },
+                  "showInBreeding": { "type": "boolean", "description": "Whether this pet should appear in the public breeding list" }
                 }
               }
             },
@@ -224,7 +229,8 @@
                   "breed": { "type": "string" },
                   "age": { "type": "number" },
                   "gender": { "type": "string" },
-                  "imageUrl": { "type": "string", "format": "uri" }
+                  "imageUrl": { "type": "string", "format": "uri" },
+                  "showInBreeding": { "type": "boolean" }
                 }
               }
             }
@@ -254,12 +260,24 @@
                   "age": { "type": "number" },
                   "gender": { "type": "string" },
                   "image": { "type": "string", "format": "binary" },
-                  "imageUrl": { "type": "string", "format": "uri" }
+                  "imageUrl": { "type": "string", "format": "uri" },
+                  "showInBreeding": { "type": "boolean" }
                 }
               }
             },
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/Pet" }
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "species": { "type": "string" },
+                  "breed": { "type": "string" },
+                  "age": { "type": "number" },
+                  "gender": { "type": "string" },
+                  "imageUrl": { "type": "string", "format": "uri" },
+                  "showInBreeding": { "type": "boolean" }
+                }
+              }
             }
           }
         },
@@ -325,6 +343,63 @@
           }
         },
         "responses": { "201": { "description": "Created" } }
+      }
+    },
+    "/api/userplans/{id}": {
+      "parameters": [
+        { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+      ],
+      "put": {
+        "summary": "Update my user plan",
+        "tags": ["UserPlans"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "planId": { "type": "string" },
+                  "startDate": { "type": "string", "format": "date-time" },
+                  "endDate": { "type": "string", "format": "date-time" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "OK" }, "404": { "description": "Not Found" } }
+      },
+      "delete": {
+        "summary": "Delete my user plan",
+        "tags": ["UserPlans"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Deleted" }, "404": { "description": "Not Found" } }
+      }
+    },
+    "/api/hospitals": {
+      "get": {
+        "summary": "List hospitals",
+        "tags": ["Hospitals"],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/grooming": {
+      "get": {
+        "summary": "List grooming services",
+        "tags": ["Grooming"],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/breeding": {
+      "get": {
+        "summary": "List pets visible for breeding",
+        "tags": ["Breeding"],
+        "parameters": [
+          { "name": "species", "in": "query", "schema": { "type": "string" } },
+          { "name": "breed", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "OK" } }
       }
     },
     "/api/walkingrequests": {

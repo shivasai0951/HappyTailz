@@ -22,6 +22,9 @@ const adminGroomingRouter = require('./routes/admin/grooming');
 const adminPlansRouter = require('./routes/admin/plans');
 const adminUsersRouter = require('./routes/admin/users');
 const adminDashboardRouter = require('./routes/admin/dashboard');
+const publicHospitalsRouter = require('./routes/hospitals');
+const publicGroomingRouter = require('./routes/grooming');
+const publicBreedingRouter = require('./routes/breeding');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -65,6 +68,10 @@ app.use('/api/userplans', userPlansRouter);
 app.use('/api/dashboard', userDashboardRouter);
 app.use('/api/profile', profileRouter);
 app.use('/api/walkingrequests', walkingRequestsRouter);
+// Public listing routes
+app.use('/api/hospitals', publicHospitalsRouter);
+app.use('/api/grooming', publicGroomingRouter);
+app.use('/api/breeding', publicBreedingRouter);
 app.use('/api/admin/breeding', adminBreedingRouter);
 app.use('/api/admin/hospitals', adminHospitalsRouter);
 app.use('/api/admin/grooming', adminGroomingRouter);
