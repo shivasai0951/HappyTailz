@@ -25,6 +25,8 @@
           "name": { "type": "string" },
           "email": { "type": "string", "format": "email" },
           "role": { "type": "string", "enum": ["admin", "driver", "user"] },
+          "address": { "type": "string" },
+          "contact": { "type": "string" },
           "imageUrl": { "type": "string", "format": "uri", "description": "Direct URL of the user's image" }
         }
       },
@@ -49,6 +51,8 @@
           "name": { "type": "string" },
           "services": { "type": "array", "items": { "type": "string" } },
           "price": { "type": "number" },
+          "oldprice": { "type": "number" },
+          "address": { "type": "string" },
           "durationMinutes": { "type": "integer" },
           "active": { "type": "boolean" },
           "imageUrl": { "type": "string", "format": "uri", "description": "Direct URL of the grooming image" }
@@ -501,8 +505,7 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "name": { "type": "string" },
-                  "phone": { "type": "string" },
+                  "contact": { "type": "string" },
                   "address": { "type": "string" },
                   "image": { "type": "string", "format": "binary" },
                   "imageUrl": { "type": "string", "format": "uri" }
@@ -513,8 +516,7 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "name": { "type": "string" },
-                  "phone": { "type": "string" },
+                  "contact": { "type": "string" },
                   "address": { "type": "string" },
                   "imageUrl": { "type": "string", "format": "uri" }
                 }
@@ -731,6 +733,8 @@
                   "name": { "type": "string" },
                   "services": { "type": "array", "items": { "type": "string" } },
                   "price": { "type": "number" },
+                  "oldprice": { "type": "number" },
+                  "address": { "type": "string" },
                   "durationMinutes": { "type": "integer" },
                   "active": { "type": "boolean" },
                   "image": { "type": "string", "format": "binary" },
@@ -746,6 +750,8 @@
                   "name": { "type": "string" },
                   "services": { "type": "array", "items": { "type": "string" } },
                   "price": { "type": "number" },
+                  "oldprice": { "type": "number" },
+                  "address": { "type": "string" },
                   "durationMinutes": { "type": "integer" },
                   "active": { "type": "boolean" },
                   "imageUrl": { "type": "string", "format": "uri" }
@@ -775,6 +781,8 @@
                   "name": { "type": "string" },
                   "services": { "type": "array", "items": { "type": "string" } },
                   "price": { "type": "number" },
+                  "oldprice": { "type": "number" },
+                  "address": { "type": "string" },
                   "durationMinutes": { "type": "integer" },
                   "active": { "type": "boolean" },
                   "image": { "type": "string", "format": "binary" },
@@ -789,6 +797,8 @@
                   "name": { "type": "string" },
                   "services": { "type": "array", "items": { "type": "string" } },
                   "price": { "type": "number" },
+                  "oldprice": { "type": "number" },
+                  "address": { "type": "string" },
                   "durationMinutes": { "type": "integer" },
                   "active": { "type": "boolean" },
                   "imageUrl": { "type": "string", "format": "uri" }

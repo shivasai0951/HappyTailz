@@ -21,14 +21,11 @@ router.get('/', requireAuth, async (req, res) => {
 router.put('/', requireAuth, upload.single('image'), async (req, res) => {
   try {
     const imageUrlFromFile = req.file ? `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}` : undefined;
-    const update = { ...req.body };
+    // Allow only address and contact to be updated by the user (plus image)
+    const update = {};
+    if (typeof req.body.address === 'string') update.address = req.body.address;
+    if (typeof req.body.contact === 'string') update.contact = req.body.contact;
     if (imageUrlFromFile) update.imageUrl = imageUrlFromFile;
-    // If client explicitly sends empty string for imageUrl, ignore it
-    if (typeof update.imageUrl === 'string' && update.imageUrl.trim() === '') delete update.imageUrl;
-
-    // Never allow direct password update here
-    delete update.password;
-    delete update.role;
 
     const user = await User.findByIdAndUpdate(req.user.id, update, { new: true }).select('-password');
     if (!user) return res.status(404).json({ error: 'User not found' });
@@ -65,3 +62,4 @@ router.put('/password', requireAuth, async (req, res) => {
 });
 
 module.exports = router;
+
