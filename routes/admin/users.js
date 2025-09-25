@@ -127,8 +127,13 @@ router.post('/', upload.single('image'), async (req, res) => {
     const exists = await User.findOne({ email });
     if (exists) return res.status(409).json({ error: 'Email already exists' });
     const hashed = await bcrypt.hash(password || 'password123', 10);
-    const imageUrl = req.file ? `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}` : undefined;
-    const user = await User.create({ name, email, password: hashed, role, phone, address, ...(imageUrl ? { imageUrl } : {}) });
+    let image;
+    if (req.file) {
+      image = { data: req.file.buffer, contentType: req.file.mimetype };
+    } else if (req.body && req.body.imageData && req.body.imageContentType) {
+      image = { data: Buffer.from(req.body.imageData, 'base64'), contentType: req.body.imageContentType };
+    }
+    const user = await User.create({ name, email, password: hashed, role, phone, address, ...(image ? { image } : {}) });
     res.status(201).json({ id: user._id, name: user.name, email: user.email, role: user.role });
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -138,8 +143,13 @@ router.post('/', upload.single('image'), async (req, res) => {
 // Update user
 router.put('/:id', upload.single('image'), async (req, res) => {
   try {
-    const imageUrl = req.file ? `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}` : undefined;
-    const update = { ...req.body, ...(imageUrl ? { imageUrl } : {}) };
+    let image;
+    if (req.file) {
+      image = { data: req.file.buffer, contentType: req.file.mimetype };
+    } else if (req.body && req.body.imageData && req.body.imageContentType) {
+      image = { data: Buffer.from(req.body.imageData, 'base64'), contentType: req.body.imageContentType };
+    }
+    const update = { ...req.body, ...(image ? { image } : {}) };
     if (update.password) {
       update.password = await bcrypt.hash(update.password, 10);
     }

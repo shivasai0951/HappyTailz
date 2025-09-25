@@ -27,7 +27,13 @@
           "role": { "type": "string", "enum": ["admin", "driver", "user"] },
           "address": { "type": "string" },
           "contact": { "type": "string" },
-          "imageUrl": { "type": "string", "format": "uri", "description": "Direct URL of the user's image" }
+          "image": {
+            "type": "object",
+            "properties": {
+              "contentType": { "type": "string", "description": "MIME type, e.g. image/png" },
+              "data": { "type": "string", "description": "Base64-encoded image data" }
+            }
+          }
         }
       },
       "Pet": {
@@ -40,7 +46,13 @@
           "breed": { "type": "string" },
           "age": { "type": "number" },
           "gender": { "type": "string" },
-          "imageUrl": { "type": "string", "format": "uri", "description": "Direct URL of the pet image" },
+          "image": {
+            "type": "object",
+            "properties": {
+              "contentType": { "type": "string" },
+              "data": { "type": "string", "description": "Base64-encoded image data" }
+            }
+          },
           "showInBreeding": { "type": "boolean", "description": "Whether this pet should appear in the public breeding list" }
         }
       },
@@ -55,7 +67,13 @@
           "address": { "type": "string" },
           "durationMinutes": { "type": "integer" },
           "active": { "type": "boolean" },
-          "imageUrl": { "type": "string", "format": "uri", "description": "Direct URL of the grooming image" }
+          "image": {
+            "type": "object",
+            "properties": {
+              "contentType": { "type": "string" },
+              "data": { "type": "string", "description": "Base64-encoded image data" }
+            }
+          }
         }
       },
       "Breeding": {
@@ -65,7 +83,13 @@
           "name": { "type": "string" },
           "description": { "type": "string" },
           "active": { "type": "boolean" },
-          "imageUrl": { "type": "string", "format": "uri", "description": "Direct URL of the breeding image" }
+          "image": {
+            "type": "object",
+            "properties": {
+              "contentType": { "type": "string" },
+              "data": { "type": "string", "description": "Base64-encoded image data" }
+            }
+          }
         }
       },
       "Hospital": {
@@ -77,7 +101,13 @@
           "phone": { "type": "string" },
           "services": { "type": "array", "items": { "type": "string" } },
           "active": { "type": "boolean" },
-          "imageUrl": { "type": "string", "format": "uri", "description": "Direct URL of the hospital image" }
+          "image": {
+            "type": "object",
+            "properties": {
+              "contentType": { "type": "string" },
+              "data": { "type": "string", "description": "Base64-encoded image data" }
+            }
+          }
         }
       },
       "Plan": {
@@ -218,7 +248,8 @@
                   "age": { "type": "number" },
                   "gender": { "type": "string" },
                   "image": { "type": "string", "format": "binary", "description": "Image file upload (field name: image)" },
-                  "imageUrl": { "type": "string", "format": "uri", "description": "Optional direct image URL instead of file" },
+                  "imageData": { "type": "string", "description": "Base64-encoded image data (alternative to multipart)" },
+                  "imageContentType": { "type": "string", "description": "MIME type for imageData, e.g. image/png" },
                   "showInBreeding": { "type": "boolean", "description": "Whether this pet should appear in the public breeding list" }
                 }
               }
@@ -233,7 +264,8 @@
                   "breed": { "type": "string" },
                   "age": { "type": "number" },
                   "gender": { "type": "string" },
-                  "imageUrl": { "type": "string", "format": "uri" },
+                  "imageData": { "type": "string", "description": "Base64-encoded image data" },
+                  "imageContentType": { "type": "string", "description": "MIME type for imageData" },
                   "showInBreeding": { "type": "boolean" }
                 }
               }
@@ -264,7 +296,8 @@
                   "age": { "type": "number" },
                   "gender": { "type": "string" },
                   "image": { "type": "string", "format": "binary" },
-                  "imageUrl": { "type": "string", "format": "uri" },
+                  "imageData": { "type": "string" },
+                  "imageContentType": { "type": "string" },
                   "showInBreeding": { "type": "boolean" }
                 }
               }
@@ -278,13 +311,15 @@
                   "breed": { "type": "string" },
                   "age": { "type": "number" },
                   "gender": { "type": "string" },
-                  "imageUrl": { "type": "string", "format": "uri" },
+                  "imageData": { "type": "string" },
+                  "imageContentType": { "type": "string" },
                   "showInBreeding": { "type": "boolean" }
                 }
               }
             }
           }
-        },
+        }
+,
         "responses": { "200": { "description": "OK" }, "404": { "description": "Not Found" } }
       },
       "delete": {
@@ -508,7 +543,8 @@
                   "contact": { "type": "string" },
                   "address": { "type": "string" },
                   "image": { "type": "string", "format": "binary" },
-                  "imageUrl": { "type": "string", "format": "uri" }
+                  "imageData": { "type": "string" },
+                  "imageContentType": { "type": "string" }
                 }
               }
             },
@@ -518,7 +554,8 @@
                 "properties": {
                   "contact": { "type": "string" },
                   "address": { "type": "string" },
-                  "imageUrl": { "type": "string", "format": "uri" }
+                  "imageData": { "type": "string" },
+                  "imageContentType": { "type": "string" }
                 }
               }
             }
@@ -568,7 +605,8 @@
                   "description": { "type": "string" },
                   "active": { "type": "boolean" },
                   "image": { "type": "string", "format": "binary" },
-                  "imageUrl": { "type": "string", "format": "uri" }
+                  "imageData": { "type": "string" },
+                  "imageContentType": { "type": "string" }
                 }
               }
             },
@@ -580,7 +618,8 @@
                   "name": { "type": "string" },
                   "description": { "type": "string" },
                   "active": { "type": "boolean" },
-                  "imageUrl": { "type": "string", "format": "uri" }
+                  "imageData": { "type": "string" },
+                  "imageContentType": { "type": "string" }
                 }
               }
             }
@@ -608,7 +647,8 @@
                   "description": { "type": "string" },
                   "active": { "type": "boolean" },
                   "image": { "type": "string", "format": "binary" },
-                  "imageUrl": { "type": "string", "format": "uri" }
+                  "imageData": { "type": "string" },
+                  "imageContentType": { "type": "string" }
                 }
               }
             },
@@ -619,7 +659,8 @@
                   "name": { "type": "string" },
                   "description": { "type": "string" },
                   "active": { "type": "boolean" },
-                  "imageUrl": { "type": "string", "format": "uri" }
+                  "imageData": { "type": "string" },
+                  "imageContentType": { "type": "string" }
                 }
               }
             }
@@ -649,7 +690,8 @@
                   "services": { "type": "array", "items": { "type": "string" } },
                   "active": { "type": "boolean" },
                   "image": { "type": "string", "format": "binary" },
-                  "imageUrl": { "type": "string", "format": "uri" }
+                  "imageData": { "type": "string" },
+                  "imageContentType": { "type": "string" }
                 }
               }
             },
@@ -663,7 +705,8 @@
                   "phone": { "type": "string" },
                   "services": { "type": "array", "items": { "type": "string" } },
                   "active": { "type": "boolean" },
-                  "imageUrl": { "type": "string", "format": "uri" }
+                  "imageData": { "type": "string" },
+                  "imageContentType": { "type": "string" }
                 }
               }
             }
@@ -693,7 +736,8 @@
                   "services": { "type": "array", "items": { "type": "string" } },
                   "active": { "type": "boolean" },
                   "image": { "type": "string", "format": "binary" },
-                  "imageUrl": { "type": "string", "format": "uri" }
+                  "imageData": { "type": "string" },
+                  "imageContentType": { "type": "string" }
                 }
               }
             },
@@ -706,7 +750,8 @@
                   "phone": { "type": "string" },
                   "services": { "type": "array", "items": { "type": "string" } },
                   "active": { "type": "boolean" },
-                  "imageUrl": { "type": "string", "format": "uri" }
+                  "imageData": { "type": "string" },
+                  "imageContentType": { "type": "string" }
                 }
               }
             }
@@ -738,7 +783,8 @@
                   "durationMinutes": { "type": "integer" },
                   "active": { "type": "boolean" },
                   "image": { "type": "string", "format": "binary" },
-                  "imageUrl": { "type": "string", "format": "uri" }
+                  "imageData": { "type": "string" },
+                  "imageContentType": { "type": "string" }
                 }
               }
             },
@@ -754,7 +800,8 @@
                   "address": { "type": "string" },
                   "durationMinutes": { "type": "integer" },
                   "active": { "type": "boolean" },
-                  "imageUrl": { "type": "string", "format": "uri" }
+                  "imageData": { "type": "string" },
+                  "imageContentType": { "type": "string" }
                 }
               }
             }
@@ -786,7 +833,8 @@
                   "durationMinutes": { "type": "integer" },
                   "active": { "type": "boolean" },
                   "image": { "type": "string", "format": "binary" },
-                  "imageUrl": { "type": "string", "format": "uri" }
+                  "imageData": { "type": "string" },
+                  "imageContentType": { "type": "string" }
                 }
               }
             },
@@ -801,12 +849,14 @@
                   "address": { "type": "string" },
                   "durationMinutes": { "type": "integer" },
                   "active": { "type": "boolean" },
-                  "imageUrl": { "type": "string", "format": "uri" }
+                  "imageData": { "type": "string" },
+                  "imageContentType": { "type": "string" }
                 }
               }
             }
           }
-        },
+        }
+,
         "responses": { "200": { "description": "OK" }, "404": { "description": "Not Found" } }
       },
       "delete": { "summary": "Delete grooming", "tags": ["Admin - Grooming"], "security": [{ "bearerAuth": [] }], "responses": { "200": { "description": "Deleted" }, "404": { "description": "Not Found" } } }
@@ -918,7 +968,8 @@
                   "phone": { "type": "string" },
                   "address": { "type": "string" },
                   "image": { "type": "string", "format": "binary" },
-                  "imageUrl": { "type": "string", "format": "uri" }
+                  "imageData": { "type": "string" },
+                  "imageContentType": { "type": "string" }
                 }
               }
             },
@@ -933,7 +984,8 @@
                   "role": { "type": "string", "enum": ["admin", "driver", "user" ] },
                   "phone": { "type": "string" },
                   "address": { "type": "string" },
-                  "imageUrl": { "type": "string", "format": "uri" }
+                  "imageData": { "type": "string" },
+                  "imageContentType": { "type": "string" }
                 }
               }
             }
@@ -989,7 +1041,8 @@
                   "phone": { "type": "string" },
                   "address": { "type": "string" },
                   "image": { "type": "string", "format": "binary" },
-                  "imageUrl": { "type": "string", "format": "uri" }
+                  "imageData": { "type": "string" },
+                  "imageContentType": { "type": "string" }
                 }
               }
             },
@@ -1003,7 +1056,8 @@
                   "role": { "type": "string", "enum": ["admin", "driver", "user"] },
                   "phone": { "type": "string" },
                   "address": { "type": "string" },
-                  "imageUrl": { "type": "string", "format": "uri" }
+                  "imageData": { "type": "string" },
+                  "imageContentType": { "type": "string" }
                 }
               }
             }

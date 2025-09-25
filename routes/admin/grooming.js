@@ -9,8 +9,8 @@ router.use(requireAuth, requireRoles('admin'));
 
 router.post('/', upload.single('image'), async (req, res) => {
   try {
-    const imageUrl = req.file ? `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}` : undefined;
-    const item = await Grooming.create({ ...req.body, ...(imageUrl ? { imageUrl } : {}) });
+    const image = req.file ? { data: req.file.buffer, contentType: req.file.mimetype } : undefined;
+    const item = await Grooming.create({ ...req.body, ...(image ? { image } : {}) });
     res.status(201).json(item);
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -23,8 +23,8 @@ router.get('/', async (req, res) => {
 });
 
 router.put('/:id', upload.single('image'), async (req, res) => {
-  const imageUrl = req.file ? `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}` : undefined;
-  const update = { ...req.body, ...(imageUrl ? { imageUrl } : {}) };
+  const image = req.file ? { data: req.file.buffer, contentType: req.file.mimetype } : undefined;
+  const update = { ...req.body, ...(image ? { image } : {}) };
   const item = await Grooming.findByIdAndUpdate(req.params.id, update, { new: true });
   if (!item) return res.status(404).json({ error: 'Not found' });
   res.json(item);

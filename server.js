@@ -6,7 +6,6 @@ const connectDB = require('./config/db');
 // nodemon: trigger reload on env change
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./docs/swagger.json');
-const path = require('path');
 
 // Routers
 const baseRouter = require('./routes');
@@ -32,12 +31,9 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(cors());
 app.use(morgan('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '15mb' }));
+app.use(express.urlencoded({ extended: true, limit: '15mb' }));
 
-// Static file serving for uploaded images
-const UPLOADS_DIR = process.env.UPLOADS_DIR || path.join(__dirname, 'uploads');
-app.use('/uploads', express.static(UPLOADS_DIR, { maxAge: '7d', etag: true }));
 
 // Basic route
 app.get('/', (req, res) => {

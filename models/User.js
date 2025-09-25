@@ -10,9 +10,26 @@ const UserSchema = new mongoose.Schema(
     contact: { type: String, trim: true },
     address: { type: String, trim: true },
     isActive: { type: Boolean, default: true },
-    imageUrl: { type: String, trim: true }
+    image: {
+      data: Buffer,
+      contentType: String
+    }
   },
   { timestamps: true }
 );
+
+// Ensure images are serialized as base64 strings and never expose password
+UserSchema.set('toJSON', {
+  transform: function (doc, ret) {
+    delete ret.password;
+    if (ret.image && ret.image.data) {
+      ret.image = {
+        contentType: ret.image.contentType || 'application/octet-stream',
+        data: Buffer.from(ret.image.data).toString('base64')
+      };
+    }
+    return ret;
+  }
+});
 
 module.exports = mongoose.model('User', UserSchema);

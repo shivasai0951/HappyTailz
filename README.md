@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-# HappyTailz
-=======
 # HappyTailz
 
 A Node.js Express application ready for development.
@@ -72,9 +69,18 @@ HappyTailz/
 - `GET /` - Welcome message and server status
 - `GET /health` - Health check endpoint
 
-### Example Routes (in routes/index.js)
+### Image Handling (Buffers)
 
-- `GET /api/` - API information
+Images are no longer stored on disk or referenced by URL. Instead, images are stored directly in MongoDB as buffers and returned as base64 strings with their MIME type.
+
+- Stored field shape across models: `image: { contentType: string, data: string(base64) }`
+- Request options for endpoints that accept images (e.g., `POST /api/pets`, `PUT /api/profile`, `POST /api/admin/*`):
+  - Multipart form upload: field name `image` (binary file)
+  - JSON base64 fields:
+    - `imageData`: base64 string of the image
+    - `imageContentType`: MIME type (e.g., `image/png`)
+
+Server body size limit is set to ~15MB. Typical max image upload enforced by Multer is 5MB per file.
 
 ## 🔧 Configuration
 
@@ -90,8 +96,8 @@ The application uses environment variables for configuration. Copy `.env.example
 The application includes the following middleware:
 
 - **CORS** - Cross-origin resource sharing
-- **Express JSON** - Parse JSON request bodies
-- **Express URL Encoded** - Parse URL-encoded request bodies
+- **Express JSON** - Parse JSON request bodies (limit 15MB)
+- **Express URL Encoded** - Parse URL-encoded request bodies (limit 15MB)
 - **Custom Auth** - Example authentication middleware (in middleware/auth.js)
 
 ## 📝 Development
@@ -114,4 +120,3 @@ This is a basic Express.js setup ready for development. You can:
 ## 📄 License
 
 This project is licensed under the MIT License.
->>>>>>> 32d1c90 (Initial commit)

@@ -9,8 +9,13 @@ router.use(requireAuth, requireRoles('admin'));
 
 router.post('/', upload.single('image'), async (req, res) => {
   try {
-    const imageUrl = req.file ? `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}` : undefined;
-    const item = await Breeding.create({ ...req.body, ...(imageUrl ? { imageUrl } : {}) });
+    let image;
+    if (req.file) {
+      image = { data: req.file.buffer, contentType: req.file.mimetype };
+    } else if (req.body && req.body.imageData && req.body.imageContentType) {
+      image = { data: Buffer.from(req.body.imageData, 'base64'), contentType: req.body.imageContentType };
+    }
+    const item = await Breeding.create({ ...req.body, ...(image ? { image } : {}) });
     res.status(201).json(item);
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -23,8 +28,13 @@ router.get('/', async (req, res) => {
 });
 
 router.put('/:id', upload.single('image'), async (req, res) => {
-  const imageUrl = req.file ? `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}` : undefined;
-  const update = { ...req.body, ...(imageUrl ? { imageUrl } : {}) };
+  let image;
+  if (req.file) {
+    image = { data: req.file.buffer, contentType: req.file.mimetype };
+  } else if (req.body && req.body.imageData && req.body.imageContentType) {
+    image = { data: Buffer.from(req.body.imageData, 'base64'), contentType: req.body.imageContentType };
+  }
+  const update = { ...req.body, ...(image ? { image } : {}) };
   const item = await Breeding.findByIdAndUpdate(req.params.id, update, { new: true });
   if (!item) return res.status(404).json({ error: 'Not found' });
   res.json(item);

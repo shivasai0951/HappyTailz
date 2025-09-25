@@ -8,8 +8,13 @@ const router = express.Router();
 // Create pet
 router.post('/', requireAuth, upload.single('image'), async (req, res) => {
   try {
-    const imageUrl = req.file ? `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}` : undefined;
-    const pet = await Pet.create({ ...req.body, ownerId: req.user.id, ...(imageUrl ? { imageUrl } : {}) });
+    let image;
+    if (req.file) {
+      image = { data: req.file.buffer, contentType: req.file.mimetype };
+    } else if (req.body && req.body.imageData && req.body.imageContentType) {
+      image = { data: Buffer.from(req.body.imageData, 'base64'), contentType: req.body.imageContentType };
+    }
+    const pet = await Pet.create({ ...req.body, ownerId: req.user.id, ...(image ? { image } : {}) });
     res.status(201).json(pet);
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -24,8 +29,13 @@ router.get('/', requireAuth, async (req, res) => {
 
 // Update pet (owner only)
 router.put('/:id', requireAuth, upload.single('image'), async (req, res) => {
-  const imageUrl = req.file ? `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}` : undefined;
-  const update = { ...req.body, ...(imageUrl ? { imageUrl } : {}) };
+  let image;
+  if (req.file) {
+    image = { data: req.file.buffer, contentType: req.file.mimetype };
+  } else if (req.body && req.body.imageData && req.body.imageContentType) {
+    image = { data: Buffer.from(req.body.imageData, 'base64'), contentType: req.body.imageContentType };
+  }
+  const update = { ...req.body, ...(image ? { image } : {}) };
   const pet = await Pet.findOneAndUpdate({ _id: req.params.id, ownerId: req.user.id }, update, { new: true });
   if (!pet) return res.status(404).json({ error: 'Pet not found' });
   res.json(pet);
