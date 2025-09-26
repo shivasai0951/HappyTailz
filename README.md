@@ -69,18 +69,75 @@ HappyTailz/
 - `GET /` - Welcome message and server status
 - `GET /health` - Health check endpoint
 
-### Image Handling (Buffers)
+### Image Handling (Encrypted short IDs)
 
-Images are no longer stored on disk or referenced by URL. Instead, images are stored directly in MongoDB as buffers and returned as base64 strings with their MIME type.
+Images are stored separately in MongoDB as encrypted blobs and referenced by a short ID. At response time, the API expands the reference and returns base64 data for compatibility with existing clients.
 
-- Stored field shape across models: `image: { contentType: string, data: string(base64) }`
+- Storage model: `models/ImageBlob.js` with fields `{ _id: string, contentType: string, blob: Buffer }` where `blob` = `iv(12) | tag(16) | ciphertext` using AES-256-GCM.
+- Reference field on records: e.g., `models/Breeding.js` now includes `imageRef: string` (short ID). The legacy inline `image` field is kept only for response compatibility.
 - Request options for endpoints that accept images (e.g., `POST /api/pets`, `PUT /api/profile`, `POST /api/admin/*`):
   - Multipart form upload: field name `image` (binary file)
   - JSON base64 fields:
     - `imageData`: base64 string of the image
     - `imageContentType`: MIME type (e.g., `image/png`)
 
-Server body size limit is set to ~15MB. Typical max image upload enforced by Multer is 5MB per file.
+Server body size limit is set to ~15MB. Multer enforces max 5MB per file.
+
+#### Example: Create admin breeding item
+
+Multipart form-data:
+
+```
+POST /api/admin/breeding
+Authorization: Bearer <token>
+Content-Type: multipart/form-data
+
+Fields:
+- name: "Golden Retriever"
+- description: "Friendly dogs"
+- image: <binary file>
+```
+
+JSON base64:
+
+```
+POST /api/admin/breeding
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "name": "Golden Retriever",
+  "description": "Friendly dogs",
+  "imageData": "<base64 string>",
+  "imageContentType": "image/png"
+}
+```
+
+Response contains expanded image for compatibility:
+
+```
+{
+  "_id": "...",
+  "name": "Golden Retriever",
+  "description": "Friendly dogs",
+  "imageRef": "Ab12Cd34Ef56",
+  "image": {
+    "contentType": "image/png",
+    "data": "<base64>"
+  }
+}
+```
+
+#### Public breeding list
+
+`GET /api/breeding` returns a combined payload of user pets marked for breeding and admin listings. Images are expanded from `imageRef` to base64.
+
+```
+{
+  "pets": [...],
+  "listings": [...]
+}
+```
 
 ## 🔧 Configuration
 
@@ -90,6 +147,14 @@ The application uses environment variables for configuration. Copy `.env.example
 
 - `PORT` - Server port (default: 3000)
 - `NODE_ENV` - Environment mode (development/production)
+- `ENCRYPTION_KEY` - AES-256 key for image encryption. Recommended 32-byte key as hex (64 hex chars) or base64 (32 bytes when decoded). If not provided, a derived development key is used automatically.
+
+Example:
+
+```
+# 32-byte key in hex
+ENCRYPTION_KEY=5d8f2e8d6cfab1b3d4f63c1e2a7b9c0d5e6f718293a4b5c6d7e8f9a0b1c2d3e4
+```
 
 ## 🚦 Middleware
 
@@ -108,6 +173,17 @@ This is a basic Express.js setup ready for development. You can:
 2. Create controllers in the `controllers/` directory
 3. Add middleware in the `middleware/` directory
 4. Configure environment variables in `.env`
+
+### Internals
+
+- Encryption utils: `utils/crypto.js` provides AES-256-GCM `encrypt(buffer)` and `decrypt(buffer)`.
+- Image store: `utils/imageStore.js` exposes `saveImage(buffer, contentType) -> id`, `getImageBase64(id) -> { contentType, data }`, and `deleteImage(id)`.
+- Short IDs generated via `nanoid`.
+
+### Migration Notes
+
+- Existing documents with inline `image` fields will still serialize to base64 via each model's `toJSON` transform.
+- New writes in admin breeding now store via `imageRef`. If you need to backfill older inline images into `ImageBlob`, write a one-time migration that saves the buffer via `saveImage` and sets `imageRef`, optionally clearing the inline `image` field afterward.
 
 ## 🤝 Contributing
 

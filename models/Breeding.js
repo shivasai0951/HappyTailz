@@ -5,6 +5,8 @@ const BreedingSchema = new mongoose.Schema(
     name: { type: String, required: true, unique: true },
     description: { type: String },
     active: { type: Boolean, default: true },
+    // New: reference to encrypted image blob stored separately
+    imageRef: { type: String },
     image: {
       data: Buffer,
       contentType: String
