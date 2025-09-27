@@ -1,12 +1,19 @@
-const { customAlphabet } = require('nanoid');
 const ImageBlob = require('../models/ImageBlob');
 const { encrypt, decrypt } = require('./crypto');
 
-const nanoid = customAlphabet('1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz', 12);
+// nanoid v5 is ESM-only; use dynamic import in CommonJS and lazy-init the generator
+let idGenerator;
+async function ensureIdGenerator() {
+  if (!idGenerator) {
+    const { customAlphabet } = await import('nanoid');
+    idGenerator = customAlphabet('1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz', 12);
+  }
+}
 
 async function saveImage(buffer, contentType) {
+  await ensureIdGenerator();
   const payload = encrypt(buffer);
-  const id = nanoid();
+  const id = idGenerator();
   await ImageBlob.findByIdAndUpdate(
     id,
     { _id: id, contentType, blob: payload },
