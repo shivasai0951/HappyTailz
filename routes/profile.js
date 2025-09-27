@@ -26,8 +26,9 @@ router.put('/', requireAuth, upload.single('image'), async (req, res) => {
     } else if (req.body && req.body.imageData && req.body.imageContentType) {
       image = { data: Buffer.from(req.body.imageData, 'base64'), contentType: req.body.imageContentType };
     }
-    // Allow only address and contact to be updated by the user (plus image)
+    // Allow name, address and contact to be updated by the user (plus image)
     const update = {};
+    if (typeof req.body.name === 'string' && req.body.name.trim()) update.name = req.body.name.trim();
     if (typeof req.body.address === 'string') update.address = req.body.address;
     if (typeof req.body.contact === 'string') update.contact = req.body.contact;
     if (image) update.image = image;
