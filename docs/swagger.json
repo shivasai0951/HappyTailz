@@ -116,7 +116,11 @@
           "id": { "type": "string" },
           "name": { "type": "string", "enum": ["1 day", "1 week", "1 month"] },
           "durationDays": { "type": "integer" },
-          "price": { "type": "number" }
+          "price": { "type": "number" },
+          "oldPrice": { "type": "number" },
+          "discount": { "type": "number" },
+          "description": { "type": "string" },
+          "active": { "type": "boolean" }
         }
       },
       "UserPlan": {
@@ -871,7 +875,21 @@
       "delete": { "summary": "Delete grooming", "tags": ["Admin - Grooming"], "security": [{ "bearerAuth": [] }], "responses": { "200": { "description": "Deleted" }, "404": { "description": "Not Found" } } }
     },
     "/api/admin/plans": {
-      "get": { "summary": "List plans", "tags": ["Admin - Plans"], "security": [{ "bearerAuth": [] }], "responses": { "200": { "description": "OK" } } },
+      "get": {
+        "summary": "List plans",
+        "tags": ["Admin - Plans"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Plan" } }
+              }
+            }
+          }
+        }
+      },
       "post": {
         "summary": "Create plan",
         "tags": ["Admin - Plans"],
@@ -887,6 +905,8 @@
                   "name": { "type": "string", "enum": ["1 day", "1 week", "1 month"] },
                   "durationDays": { "type": "integer" },
                   "price": { "type": "number" },
+                  "oldPrice": { "type": "number" },
+                  "discount": { "type": "number" },
                   "description": { "type": "string" },
                   "active": { "type": "boolean" }
                 }
@@ -894,7 +914,14 @@
             }
           }
         },
-        "responses": { "201": { "description": "Created" } }
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Plan" } }
+            }
+          }
+        }
       }
     },
     "/api/admin/plans/{id}": {
@@ -915,6 +942,8 @@
                   "name": { "type": "string", "enum": ["1 day", "1 week", "1 month"] },
                   "durationDays": { "type": "integer" },
                   "price": { "type": "number" },
+                  "oldPrice": { "type": "number" },
+                  "discount": { "type": "number" },
                   "description": { "type": "string" },
                   "active": { "type": "boolean" }
                 }
@@ -922,7 +951,13 @@
             }
           }
         },
-        "responses": { "200": { "description": "OK" }, "404": { "description": "Not Found" } }
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Plan" } } }
+          },
+          "404": { "description": "Not Found" }
+        }
       },
       "delete": { "summary": "Delete plan", "tags": ["Admin - Plans"], "security": [{ "bearerAuth": [] }], "responses": { "200": { "description": "Deleted" }, "404": { "description": "Not Found" } } }
     },
