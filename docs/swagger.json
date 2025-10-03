@@ -120,7 +120,8 @@
           "oldPrice": { "type": "number" },
           "discount": { "type": "number" },
           "description": { "type": "string" },
-          "active": { "type": "boolean" }
+          "active": { "type": "boolean" },
+          "options": { "type": "array", "items": { "type": "string" }, "description": "List of plan options configured by admin" }
         }
       },
       "UserPlan": {
@@ -349,7 +350,21 @@
                   "type": "object",
                   "properties": {
                     "hasPlan": { "type": "boolean" },
-                    "plan": { "type": "object", "properties": { "isActive": { "type": "boolean" } } },
+                    "plan": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "string" },
+                        "name": { "type": "string" },
+                        "durationDays": { "type": "integer" },
+                        "price": { "type": "number" },
+                        "options": { "type": "array", "items": { "type": "string" } },
+                        "startDate": { "type": "string", "format": "date-time" },
+                        "endDate": { "type": "string", "format": "date-time" },
+                        "status": { "type": "string" },
+                        "isActive": { "type": "boolean" },
+                        "daysLeft": { "type": "integer" }
+                      }
+                    },
                     "pets": { "type": "object", "properties": { "count": { "type": "integer" }, "items": { "type": "array", "items": { "$ref": "#/components/schemas/Pet" } } } },
                     "walkingRequests": { "type": "object", "properties": { "upcoming": { "type": "array" }, "completedCount": { "type": "integer" } } }
                   }
@@ -368,7 +383,8 @@
         "responses": { "200": { "description": "OK" } }
       },
       "post": {
-        "summary": "Subscribe to a plan",
+        "summary": "Subscribe to a plan (disabled)",
+        "deprecated": true,
         "tags": ["UserPlans"],
         "security": [{ "bearerAuth": [] }],
         "requestBody": {
@@ -386,7 +402,7 @@
             }
           }
         },
-        "responses": { "201": { "description": "Created" } }
+        "responses": { "403": { "description": "Forbidden" } }
       }
     },
     "/api/userplans/{id}": {
@@ -394,7 +410,8 @@
         { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
       ],
       "put": {
-        "summary": "Update my user plan",
+        "summary": "Update my user plan (disabled)",
+        "deprecated": true,
         "tags": ["UserPlans"],
         "security": [{ "bearerAuth": [] }],
         "requestBody": {
@@ -412,13 +429,14 @@
             }
           }
         },
-        "responses": { "200": { "description": "OK" }, "404": { "description": "Not Found" } }
+        "responses": { "403": { "description": "Forbidden" } }
       },
       "delete": {
-        "summary": "Delete my user plan",
+        "summary": "Delete my user plan (disabled)",
+        "deprecated": true,
         "tags": ["UserPlans"],
         "security": [{ "bearerAuth": [] }],
-        "responses": { "200": { "description": "Deleted" }, "404": { "description": "Not Found" } }
+        "responses": { "403": { "description": "Forbidden" } }
       }
     },
     "/api/hospitals": {
@@ -519,10 +537,21 @@
         { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
       ],
       "post": {
-        "summary": "Mark walking request as completed (driver)",
+        "summary": "Mark walking request as completed (driver or admin)",
         "tags": ["WalkingRequests"],
         "security": [{ "bearerAuth": [] }],
         "responses": { "200": { "description": "Completed" }, "404": { "description": "Not Found" } }
+      }
+    },
+    "/api/walkingrequests/{id}": {
+      "parameters": [
+        { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+      ],
+      "delete": {
+        "summary": "Delete a walking request (admin)",
+        "tags": ["WalkingRequests"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Deleted" }, "404": { "description": "Not Found" } }
       }
     },
     "/api/walkingrequests/me": {
@@ -908,7 +937,8 @@
                   "oldPrice": { "type": "number" },
                   "discount": { "type": "number" },
                   "description": { "type": "string" },
-                  "active": { "type": "boolean" }
+                  "active": { "type": "boolean" },
+                  "options": { "type": "array", "items": { "type": "string" } }
                 }
               }
             }
@@ -945,7 +975,8 @@
                   "oldPrice": { "type": "number" },
                   "discount": { "type": "number" },
                   "description": { "type": "string" },
-                  "active": { "type": "boolean" }
+                  "active": { "type": "boolean" },
+                  "options": { "type": "array", "items": { "type": "string" } }
                 }
               }
             }

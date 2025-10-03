@@ -8,7 +8,8 @@ const PlanSchema = new mongoose.Schema(
     oldPrice: { type: Number },
     discount: { type: Number },
     description: { type: String },
-    active: { type: Boolean, default: true }
+    active: { type: Boolean, default: true },
+    options: { type: [String], default: [] }
   },
   { timestamps: true }
 );

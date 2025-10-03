@@ -43,14 +43,25 @@ router.post('/:id/assign', requireAuth, requireRoles('admin'), async (req, res) 
   res.json(doc);
 });
 
-// Complete (driver)
-router.post('/:id/complete', requireAuth, requireRoles('driver'), async (req, res) => {
-  const doc = await WalkingRequest.findOneAndUpdate(
-    { _id: req.params.id, driver: req.user.id },
-    { status: 'completed', completedAt: new Date() },
-    { new: true }
-  );
-  if (!doc) return res.status(404).json({ error: 'Not found or not assigned to you' });
+// Complete (driver or admin)
+router.post('/:id/complete', requireAuth, requireRoles('driver', 'admin'), async (req, res) => {
+  let doc;
+  if (req.user.role === 'admin') {
+    // Admin can complete any walking request by id
+    doc = await WalkingRequest.findByIdAndUpdate(
+      req.params.id,
+      { status: 'completed', completedAt: new Date() },
+      { new: true }
+    );
+  } else {
+    // Driver can only complete requests assigned to them
+    doc = await WalkingRequest.findOneAndUpdate(
+      { _id: req.params.id, driver: req.user.id },
+      { status: 'completed', completedAt: new Date() },
+      { new: true }
+    );
+  }
+  if (!doc) return res.status(404).json({ error: 'Not found or not permitted' });
   res.json(doc);
 });
 
@@ -58,6 +69,13 @@ router.post('/:id/complete', requireAuth, requireRoles('driver'), async (req, re
 router.get('/', requireAuth, requireRoles('admin'), async (req, res) => {
   const docs = await WalkingRequest.find().populate('user pet driver plan');
   res.json(docs);
+});
+
+// Admin: delete a walking record
+router.delete('/:id', requireAuth, requireRoles('admin'), async (req, res) => {
+  const doc = await WalkingRequest.findByIdAndDelete(req.params.id);
+  if (!doc) return res.status(404).json({ error: 'Not found' });
+  res.json({ success: true });
 });
 
 module.exports = router;

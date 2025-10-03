@@ -6,8 +6,8 @@ router.get('/', (req, res) => {
     message: 'HappyTailz API',
     routes: {
       public: ['POST /auth/register', 'POST /auth/login', 'GET /health'],
-      user: ['GET/POST /pets', 'GET /userplans', 'POST /userplans', 'POST /walkingrequests', 'GET /walkingrequests/me'],
-      admin: ['CRUD /admin/breeding', 'CRUD /admin/hospitals', 'CRUD /admin/grooming', 'CRUD /admin/plans', 'GET /walkingrequests'],
+      user: ['GET/POST /pets', 'GET /userplans', 'POST /walkingrequests', 'GET /walkingrequests/me'],
+      admin: ['CRUD /admin/breeding', 'CRUD /admin/hospitals', 'CRUD /admin/grooming', 'CRUD /admin/plans', 'GET /walkingrequests', 'POST /walkingrequests/:id/complete', 'DELETE /walkingrequests/:id'],
       driver: ['POST /walkingrequests/:id/complete']
     }
   });

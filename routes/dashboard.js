@@ -28,6 +28,7 @@ router.get('/', requireAuth, async (req, res) => {
         name: latestPlanDoc.plan?.name,
         durationDays: latestPlanDoc.plan?.durationDays,
         price: latestPlanDoc.plan?.price,
+        options: latestPlanDoc.plan?.options || [],
         startDate: latestPlanDoc.startDate,
         endDate: latestPlanDoc.endDate,
         status: latestPlanDoc.status,
