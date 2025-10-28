@@ -14,7 +14,12 @@ router.get('/', async (req, res) => {
     if (breed) filter.breed = breed;
 
     // Combine public breeding items from admin breeding listing as well, if desired
-    const pets = await Pet.find(filter).select('-ownerId');
+    // Populate owner details with safe, public fields
+    const pets = await Pet.find(filter)
+      .populate({
+        path: 'ownerId',
+        select: 'name email phone contact address'
+      });
     const adminItems = await Breeding.find({ active: true });
 
     const expand = async (doc) => {
@@ -27,7 +32,18 @@ router.get('/', async (req, res) => {
     };
 
     const [petsExpanded, adminExpanded] = await Promise.all([
-      Promise.all(pets.map(expand)),
+      Promise.all(
+        pets.map(async (p) => {
+          const json = await expand(p);
+          // rename ownerId to owner and include only allowed fields
+          if (p.ownerId) {
+            const { _id, name, email, phone, contact, address } = p.ownerId.toJSON ? p.ownerId.toJSON() : p.ownerId;
+            json.owner = { id: _id?.toString?.() || _id, name, email, phone, contact, address };
+          }
+          delete json.ownerId; // hide raw ownerId
+          return json;
+        })
+      ),
       Promise.all(adminItems.map(expand))
     ]);
 

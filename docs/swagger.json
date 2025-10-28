@@ -449,7 +449,7 @@
       "get": {
         "summary": "List hospitals",
         "tags": ["Hospitals"],
-        "responses": { "200": { "description": "OK" } }
+        "responses": { "200": { "description": "OK", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Hospital" } } } } } }
       }
     },
     "/api/grooming": {
@@ -467,7 +467,45 @@
           { "name": "species", "in": "query", "schema": { "type": "string" } },
           { "name": "breed", "in": "query", "schema": { "type": "string" } }
         ],
-        "responses": { "200": { "description": "OK" } }
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "pets": {
+                      "type": "array",
+                      "items": {
+                        "allOf": [
+                          { "$ref": "#/components/schemas/Pet" },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "owner": {
+                                "type": "object",
+                                "properties": {
+                                  "id": { "type": "string" },
+                                  "name": { "type": "string" },
+                                  "email": { "type": "string", "format": "email" },
+                                  "phone": { "type": "string" },
+                                  "contact": { "type": "string" },
+                                  "address": { "type": "string" }
+                                }
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    "listings": { "type": "array", "items": { "$ref": "#/components/schemas/Breeding" } }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/walkingrequests": {
@@ -736,6 +774,8 @@
                   "address": { "type": "string" },
                   "phone": { "type": "string" },
                   "services": { "type": "array", "items": { "type": "string" } },
+                  "description": { "type": "string" },
+                  "availability": { "type": "array", "items": { "type": "string" } },
                   "active": { "type": "boolean" },
                   "image": { "type": "string", "format": "binary" },
                   "imageData": { "type": "string" },
@@ -752,6 +792,8 @@
                   "address": { "type": "string" },
                   "phone": { "type": "string" },
                   "services": { "type": "array", "items": { "type": "string" } },
+                  "description": { "type": "string" },
+                  "availability": { "type": "array", "items": { "type": "string" } },
                   "active": { "type": "boolean" },
                   "imageData": { "type": "string" },
                   "imageContentType": { "type": "string" }
@@ -782,6 +824,8 @@
                   "address": { "type": "string" },
                   "phone": { "type": "string" },
                   "services": { "type": "array", "items": { "type": "string" } },
+                  "description": { "type": "string" },
+                  "availability": { "type": "array", "items": { "type": "string" } },
                   "active": { "type": "boolean" },
                   "image": { "type": "string", "format": "binary" },
                   "imageData": { "type": "string" },
@@ -797,6 +841,8 @@
                   "address": { "type": "string" },
                   "phone": { "type": "string" },
                   "services": { "type": "array", "items": { "type": "string" } },
+                  "description": { "type": "string" },
+                  "availability": { "type": "array", "items": { "type": "string" } },
                   "active": { "type": "boolean" },
                   "imageData": { "type": "string" },
                   "imageContentType": { "type": "string" }
