@@ -7,6 +7,8 @@ const GroomingSchema = new mongoose.Schema(
     price: { type: Number, required: true },
     oldprice: { type: Number },
     address: { type: String, trim: true },
+    contact: { type: String, trim: true },
+    description: { type: String },
     durationMinutes: { type: Number },
     active: { type: Boolean, default: true },
     image: {

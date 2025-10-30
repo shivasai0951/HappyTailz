@@ -1,12 +1,19 @@
 const express = require('express');
 const WalkingRequest = require('../models/WalkingRequest');
 const { requireAuth, requireRoles } = require('../middleware/auth');
+const Plan = require('../models/Plan');
 
 const router = express.Router();
 
 // Create request (user)
 router.post('/', requireAuth, async (req, res) => {
   try {
+    const { plan } = req.body;
+    if (!plan) return res.status(400).json({ error: 'ValidationError', message: 'plan is required' });
+    const planDoc = await Plan.findById(plan);
+    if (!planDoc || planDoc.active === false) {
+      return res.status(400).json({ error: 'ValidationError', message: 'Invalid or inactive plan' });
+    }
     const doc = await WalkingRequest.create({ ...req.body, user: req.user.id, status: 'requested' });
     res.status(201).json(doc);
   } catch (err) {

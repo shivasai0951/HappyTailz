@@ -65,6 +65,8 @@
           "price": { "type": "number" },
           "oldprice": { "type": "number" },
           "address": { "type": "string" },
+          "contact": { "type": "string" },
+          "description": { "type": "string" },
           "durationMinutes": { "type": "integer" },
           "active": { "type": "boolean" },
           "image": {
@@ -130,17 +132,6 @@
           "options": { "type": "array", "items": { "type": "string" }, "description": "List of plan options configured by admin" }
         }
       },
-      "UserPlan": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "string" },
-          "user": { "type": "string" },
-          "plan": { "$ref": "#\/components\/schemas\/Plan" },
-          "startDate": { "type": "string", "format": "date-time" },
-          "endDate": { "type": "string", "format": "date-time" },
-          "status": { "type": "string", "enum": ["active", "expired", "cancelled"] }
-        }
-      },
       "WalkingRequest": {
         "type": "object",
         "properties": {
@@ -161,7 +152,6 @@
     { "name": "Auth" },
     { "name": "Pets" },
     { "name": "Plans" },
-    { "name": "UserPlans" },
     { "name": "WalkingRequests" },
     { "name": "Dashboard" },
     { "name": "Profile" },
@@ -381,75 +371,27 @@
         }
       }
     },
-    "/api/userplans": {
-      "get": {
-        "summary": "List my user plans",
-        "tags": ["UserPlans"],
-        "security": [{ "bearerAuth": [] }],
-        "responses": { "200": { "description": "OK" } }
-      },
-      "post": {
-        "summary": "Subscribe to a plan (disabled)",
-        "deprecated": true,
-        "tags": ["UserPlans"],
-        "security": [{ "bearerAuth": [] }],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["planId"],
-                "properties": {
-                  "planId": { "type": "string" },
-                  "startDate": { "type": "string", "format": "date-time" }
-                }
-              }
-            }
-          }
-        },
-        "responses": { "403": { "description": "Forbidden" } }
-      }
-    },
-    "/api/userplans/{id}": {
-      "parameters": [
-        { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
-      ],
-      "put": {
-        "summary": "Update my user plan (disabled)",
-        "deprecated": true,
-        "tags": ["UserPlans"],
-        "security": [{ "bearerAuth": [] }],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "planId": { "type": "string" },
-                  "startDate": { "type": "string", "format": "date-time" },
-                  "endDate": { "type": "string", "format": "date-time" }
-                }
-              }
-            }
-          }
-        },
-        "responses": { "403": { "description": "Forbidden" } }
-      },
-      "delete": {
-        "summary": "Delete my user plan (disabled)",
-        "deprecated": true,
-        "tags": ["UserPlans"],
-        "security": [{ "bearerAuth": [] }],
-        "responses": { "403": { "description": "Forbidden" } }
-      }
-    },
     "/api/hospitals": {
       "get": {
         "summary": "List hospitals",
         "tags": ["Hospitals"],
         "responses": { "200": { "description": "OK", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Hospital" } } } } } }
+      }
+    },
+    "/api/plans": {
+      "get": {
+        "summary": "List plans",
+        "tags": ["Plans"],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Plan" } }
+              }
+            }
+          }
+        }
       }
     },
     "/api/grooming": {
@@ -525,7 +467,7 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["pet", "scheduleAt"],
+                "required": ["pet", "scheduleAt", "plan"],
                 "properties": {
                   "pet": { "type": "string" },
                   "plan": { "type": "string" },
@@ -874,6 +816,8 @@
                   "price": { "type": "number" },
                   "oldprice": { "type": "number" },
                   "address": { "type": "string" },
+                  "contact": { "type": "string" },
+                  "description": { "type": "string" },
                   "durationMinutes": { "type": "integer" },
                   "active": { "type": "boolean" },
                   "image": { "type": "string", "format": "binary" },
@@ -892,6 +836,8 @@
                   "price": { "type": "number" },
                   "oldprice": { "type": "number" },
                   "address": { "type": "string" },
+                  "contact": { "type": "string" },
+                  "description": { "type": "string" },
                   "durationMinutes": { "type": "integer" },
                   "active": { "type": "boolean" },
                   "imageData": { "type": "string" },
@@ -924,6 +870,8 @@
                   "price": { "type": "number" },
                   "oldprice": { "type": "number" },
                   "address": { "type": "string" },
+                  "contact": { "type": "string" },
+                  "description": { "type": "string" },
                   "durationMinutes": { "type": "integer" },
                   "active": { "type": "boolean" },
                   "image": { "type": "string", "format": "binary" },
@@ -941,6 +889,8 @@
                   "price": { "type": "number" },
                   "oldprice": { "type": "number" },
                   "address": { "type": "string" },
+                  "contact": { "type": "string" },
+                  "description": { "type": "string" },
                   "durationMinutes": { "type": "integer" },
                   "active": { "type": "boolean" },
                   "imageData": { "type": "string" },

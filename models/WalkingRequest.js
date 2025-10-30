@@ -5,7 +5,7 @@ const WalkingRequestSchema = new mongoose.Schema(
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
     pet: { type: mongoose.Schema.Types.ObjectId, ref: 'Pet', required: true },
     driver: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    plan: { type: mongoose.Schema.Types.ObjectId, ref: 'Plan' },
+    plan: { type: mongoose.Schema.Types.ObjectId, ref: 'Plan', required: true },
     scheduleAt: { type: Date, required: true },
     location: { type: String },
     notes: { type: String },
