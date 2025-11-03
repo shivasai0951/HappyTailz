@@ -16,6 +16,15 @@ router.post('/', requireAuth, async (req, res) => {
       return res.status(400).json({ error: 'ValidationError', message: 'Invalid or inactive plan' });
     }
 
+    // Allow only one active walking request at a time per user
+    const existingActive = await WalkingRequest.findOne({
+      user: req.user.id,
+      status: { $in: ['requested', 'approved', 'assigned'] }
+    });
+    if (existingActive) {
+      return res.status(409).json({ error: 'Conflict', message: 'You already have an active walking request' });
+    }
+
     const start = new Date(scheduleAt);
     const days = [];
     for (let i = 0; i < (planDoc.durationDays || 0); i++) {

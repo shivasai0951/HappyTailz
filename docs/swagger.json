@@ -346,7 +346,7 @@
     "/api/dashboard": {
       "get": {
         "summary": "User dashboard",
-        "description": "Shows user's latest plan with isActive flag, pets summary, upcoming walking requests, and completed count.",
+        "description": "Shows user's latest plan with isActive flag, pets summary, current walking request (single), and completed count.",
         "tags": ["Dashboard"],
         "security": [{ "bearerAuth": [] }],
         "responses": {
@@ -374,7 +374,13 @@
                       }
                     },
                     "pets": { "type": "object", "properties": { "count": { "type": "integer" }, "items": { "type": "array", "items": { "$ref": "#/components/schemas/Pet" } } } },
-                    "walkingRequests": { "type": "object", "properties": { "upcoming": { "type": "array" }, "completedCount": { "type": "integer" } } }
+                    "walkingRequests": {
+                      "type": "object",
+                      "properties": {
+                        "current": { "$ref": "#/components/schemas/WalkingRequest" },
+                        "completedCount": { "type": "integer" }
+                      }
+                    }
                   }
                 }
               }

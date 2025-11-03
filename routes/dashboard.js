@@ -15,9 +15,13 @@ router.get('/', requireAuth, async (req, res) => {
     const startOfToday = new Date(now);
     startOfToday.setHours(0, 0, 0, 0);
     // Find most relevant walking request with plan
-    const upcomingReq = await WalkingRequest.findOne({ user: userId, scheduleAt: { $gte: startOfToday } })
+    const upcomingReq = await WalkingRequest.findOne({
+      user: userId,
+      scheduleAt: { $gte: startOfToday },
+      status: { $in: ['requested', 'approved', 'assigned'] }
+    })
       .sort({ scheduleAt: 1 })
-      .populate('plan');
+      .populate('pet driver plan');
     const latestReq = upcomingReq
       ? upcomingReq
       : await WalkingRequest.findOne({ user: userId })
@@ -48,16 +52,6 @@ router.get('/', requireAuth, async (req, res) => {
       };
     }
 
-    // Recent and upcoming walking requests
-    const upcoming = await WalkingRequest.find({
-      user: userId,
-      scheduleAt: { $gte: startOfToday },
-      status: { $in: ['requested', 'approved', 'assigned'] }
-    })
-      .sort({ scheduleAt: 1 })
-      .limit(5)
-      .populate('pet driver plan');
-
     // Completed walks count
     const completedCount = await WalkingRequest.countDocuments({ user: userId, status: 'completed' });
 
@@ -72,7 +66,7 @@ router.get('/', requireAuth, async (req, res) => {
         items: pets
       },
       walkingRequests: {
-        upcoming,
+        current: upcomingReq || null,
         completedCount
       }
     });
