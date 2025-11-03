@@ -500,15 +500,35 @@
         "responses": { "201": { "description": "Created" } }
       }
     },
-    "/api/walkingrequests/{id}/approve": {
+    "/api/walkingrequests/{id}/status": {
       "parameters": [
         { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
       ],
       "post": {
-        "summary": "Approve a walking request (admin)",
+        "summary": "Update walking request status (approved, completed, cancelled, rejected)",
         "tags": ["WalkingRequests"],
         "security": [{ "bearerAuth": [] }],
-        "responses": { "200": { "description": "Approved" }, "404": { "description": "Not Found" } }
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["value"],
+                "properties": {
+                  "value": { "type": "string", "enum": ["approved", "completed", "cancelled", "rejected"] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "OK" },
+          "400": { "description": "Bad Request" },
+          "403": { "description": "Forbidden" },
+          "404": { "description": "Not Found" },
+          "409": { "description": "Conflict" }
+        }
       }
     },
     "/api/walkingrequests/{id}/assign": {
@@ -536,17 +556,7 @@
         "responses": { "200": { "description": "Assigned" }, "404": { "description": "Not Found" } }
       }
     },
-    "/api/walkingrequests/{id}/complete": {
-      "parameters": [
-        { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
-      ],
-      "post": {
-        "summary": "Mark walking request as completed (driver or admin)",
-        "tags": ["WalkingRequests"],
-        "security": [{ "bearerAuth": [] }],
-        "responses": { "200": { "description": "Completed" }, "404": { "description": "Not Found" } }
-      }
-    },
+    
     "/api/walkingrequests/{id}/days/{index}": {
       "parameters": [
         { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } },

@@ -7,8 +7,8 @@ router.get('/', (req, res) => {
     routes: {
       public: ['POST /auth/register', 'POST /auth/login', 'GET /health', 'GET /plans'],
       user: ['GET/POST /pets', 'POST /walkingrequests', 'GET /walkingrequests/me'],
-      admin: ['CRUD /admin/breeding', 'CRUD /admin/hospitals', 'CRUD /admin/grooming', 'CRUD /admin/plans', 'GET /walkingrequests', 'POST /walkingrequests/:id/complete', 'DELETE /walkingrequests/:id'],
-      driver: ['POST /walkingrequests/:id/complete']
+      admin: ['CRUD /admin/breeding', 'CRUD /admin/hospitals', 'CRUD /admin/grooming', 'CRUD /admin/plans', 'GET /walkingrequests', 'POST /walkingrequests/:id/status', 'DELETE /walkingrequests/:id'],
+      driver: ['POST /walkingrequests/:id/status']
     }
   });
 });

@@ -46,15 +46,57 @@ router.get('/me', requireAuth, async (req, res) => {
   res.json(docs);
 });
 
-// Approve request (admin)
-router.post('/:id/approve', requireAuth, requireRoles('admin'), async (req, res) => {
-  const doc = await WalkingRequest.findByIdAndUpdate(
-    req.params.id,
-    { status: 'approved', approvedAt: new Date() },
-    { new: true }
-  );
-  if (!doc) return res.status(404).json({ error: 'Not found' });
-  res.json(doc);
+// Update status (approve, complete, cancel, reject) using a single API
+router.post('/:id/status', requireAuth, async (req, res) => {
+  try {
+    const { value } = req.body;
+    const allowed = ['approved', 'completed', 'cancelled', 'rejected'];
+    if (!allowed.includes(value)) {
+      return res.status(400).json({ error: 'ValidationError', message: 'Invalid status value' });
+    }
+
+    let doc = await WalkingRequest.findById(req.params.id);
+    if (!doc) return res.status(404).json({ error: 'Not found' });
+
+    // Enforce role-based permissions and state changes
+    if (value === 'approved') {
+      if (req.user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+      doc.status = 'approved';
+      doc.approvedAt = new Date();
+    } else if (value === 'completed') {
+      if (req.user.role === 'admin') {
+        doc.status = 'completed';
+        doc.completedAt = new Date();
+      } else if (req.user.role === 'driver') {
+        if (!doc.driver || doc.driver.toString() !== req.user.id) {
+          return res.status(404).json({ error: 'Not found or not permitted' });
+        }
+        doc.status = 'completed';
+        doc.completedAt = new Date();
+      } else {
+        return res.status(403).json({ error: 'Forbidden' });
+      }
+    } else if (value === 'cancelled') {
+      // Only the owner (user) can cancel their own request
+      if (req.user.role !== 'user' || doc.user.toString() !== req.user.id) {
+        return res.status(403).json({ error: 'Forbidden' });
+      }
+      // Optionally, restrict cancellable states
+      const cancellable = ['requested', 'approved', 'assigned'];
+      if (!cancellable.includes(doc.status)) {
+        return res.status(409).json({ error: 'Conflict', message: 'Request cannot be cancelled in the current status' });
+      }
+      doc.status = 'cancelled';
+    } else if (value === 'rejected') {
+      if (req.user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+      doc.status = 'rejected';
+    }
+
+    await doc.save();
+    res.json(doc);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
 });
 
 // Assign driver (admin)
@@ -66,28 +108,6 @@ router.post('/:id/assign', requireAuth, requireRoles('admin'), async (req, res) 
     { new: true }
   );
   if (!doc) return res.status(404).json({ error: 'Not found' });
-  res.json(doc);
-});
-
-// Complete (driver or admin)
-router.post('/:id/complete', requireAuth, requireRoles('driver', 'admin'), async (req, res) => {
-  let doc;
-  if (req.user.role === 'admin') {
-    // Admin can complete any walking request by id
-    doc = await WalkingRequest.findByIdAndUpdate(
-      req.params.id,
-      { status: 'completed', completedAt: new Date() },
-      { new: true }
-    );
-  } else {
-    // Driver can only complete requests assigned to them
-    doc = await WalkingRequest.findOneAndUpdate(
-      { _id: req.params.id, driver: req.user.id },
-      { status: 'completed', completedAt: new Date() },
-      { new: true }
-    );
-  }
-  if (!doc) return res.status(404).json({ error: 'Not found or not permitted' });
   res.json(doc);
 });
 
