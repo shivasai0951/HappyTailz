@@ -6,6 +6,7 @@ const connectDB = require('./config/db');
 // nodemon: trigger reload on env change
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./docs/swagger.json');
+const WalkingRequest = require('./models/WalkingRequest');
 
 // Routers
 const baseRouter = require('./routes');
@@ -99,6 +100,26 @@ const start = async () => {
   app.listen(PORT, () => {
     console.log(`🚀 Server is running on http://localhost:${PORT}`);
     console.log(`📊 Health check available at http://localhost:${PORT}/health`);
+    // Auto-reject past-dated pending walking requests hourly
+    const autoReject = async () => {
+      try {
+        const now = new Date();
+        const startOfToday = new Date(now);
+        startOfToday.setHours(0, 0, 0, 0);
+        const res = await WalkingRequest.updateMany(
+          { status: 'requested', scheduleAt: { $lt: startOfToday } },
+          { $set: { status: 'rejected' } }
+        );
+        if (res.modifiedCount) {
+          console.log(`Auto-rejected ${res.modifiedCount} outdated walking requests`);
+        }
+      } catch (e) {
+        console.error('Auto-reject job error:', e.message);
+      }
+    };
+    // run once on startup, then hourly
+    autoReject();
+    setInterval(autoReject, 60 * 60 * 1000);
   });
 };
 

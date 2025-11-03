@@ -9,10 +9,23 @@ const WalkingRequestSchema = new mongoose.Schema(
     scheduleAt: { type: Date, required: true },
     location: { type: String },
     notes: { type: String },
-    status: { type: String, enum: ['requested', 'approved', 'assigned', 'completed', 'cancelled'], default: 'requested', index: true },
+    status: { type: String, enum: ['requested', 'approved', 'assigned', 'completed', 'cancelled', 'rejected'], default: 'requested', index: true },
     approvedAt: { type: Date },
     assignedAt: { type: Date },
-    completedAt: { type: Date }
+    completedAt: { type: Date },
+    days: {
+      type: [
+        new mongoose.Schema(
+          {
+            date: { type: Date, required: true },
+            status: { type: String, enum: ['pending', 'done', 'skipped', 'missed'], default: 'pending' },
+            note: { type: String, default: '' }
+          },
+          { _id: false }
+        )
+      ],
+      default: []
+    }
   },
   { timestamps: true }
 );

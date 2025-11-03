@@ -8,13 +8,23 @@ const router = express.Router();
 // Create request (user)
 router.post('/', requireAuth, async (req, res) => {
   try {
-    const { plan } = req.body;
+    const { plan, scheduleAt } = req.body;
     if (!plan) return res.status(400).json({ error: 'ValidationError', message: 'plan is required' });
+    if (!scheduleAt) return res.status(400).json({ error: 'ValidationError', message: 'scheduleAt is required' });
     const planDoc = await Plan.findById(plan);
     if (!planDoc || planDoc.active === false) {
       return res.status(400).json({ error: 'ValidationError', message: 'Invalid or inactive plan' });
     }
-    const doc = await WalkingRequest.create({ ...req.body, user: req.user.id, status: 'requested' });
+
+    const start = new Date(scheduleAt);
+    const days = [];
+    for (let i = 0; i < (planDoc.durationDays || 0); i++) {
+      const d = new Date(start);
+      d.setDate(d.getDate() + i);
+      days.push({ date: d, status: 'pending', note: '' });
+    }
+
+    const doc = await WalkingRequest.create({ ...req.body, user: req.user.id, status: 'requested', days });
     res.status(201).json(doc);
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -70,6 +80,34 @@ router.post('/:id/complete', requireAuth, requireRoles('driver', 'admin'), async
   }
   if (!doc) return res.status(404).json({ error: 'Not found or not permitted' });
   res.json(doc);
+});
+
+// Update a specific day (admin or driver)
+router.patch('/:id/days/:index', requireAuth, requireRoles('driver', 'admin'), async (req, res) => {
+  try {
+    const { index } = req.params;
+    const { status, note } = req.body;
+    const allowed = ['pending', 'done', 'skipped', 'missed'];
+    if (status && !allowed.includes(status)) {
+      return res.status(400).json({ error: 'ValidationError', message: 'Invalid day status' });
+    }
+
+    const doc = await WalkingRequest.findById(req.params.id);
+    if (!doc) return res.status(404).json({ error: 'Not found' });
+    if (req.user.role === 'driver' && doc.driver?.toString() !== req.user.id) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+    const i = parseInt(index, 10);
+    if (Number.isNaN(i) || i < 0 || i >= doc.days.length) {
+      return res.status(400).json({ error: 'ValidationError', message: 'Invalid day index' });
+    }
+    if (typeof status === 'string') doc.days[i].status = status;
+    if (typeof note === 'string') doc.days[i].note = note;
+    await doc.save();
+    res.json(doc);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
 });
 
 // Admin: list all

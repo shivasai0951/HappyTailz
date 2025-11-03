@@ -12,8 +12,10 @@ router.get('/', requireAuth, async (req, res) => {
     const userId = req.user.id;
 
     const now = new Date();
+    const startOfToday = new Date(now);
+    startOfToday.setHours(0, 0, 0, 0);
     // Find most relevant walking request with plan
-    const upcomingReq = await WalkingRequest.findOne({ user: userId, scheduleAt: { $gte: now } })
+    const upcomingReq = await WalkingRequest.findOne({ user: userId, scheduleAt: { $gte: startOfToday } })
       .sort({ scheduleAt: 1 })
       .populate('plan');
     const latestReq = upcomingReq
@@ -49,7 +51,7 @@ router.get('/', requireAuth, async (req, res) => {
     // Recent and upcoming walking requests
     const upcoming = await WalkingRequest.find({
       user: userId,
-      scheduleAt: { $gte: now },
+      scheduleAt: { $gte: startOfToday },
       status: { $in: ['requested', 'approved', 'assigned'] }
     })
       .sort({ scheduleAt: 1 })
