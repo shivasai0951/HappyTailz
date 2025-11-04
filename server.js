@@ -25,6 +25,7 @@ const publicHospitalsRouter = require('./routes/hospitals');
 const publicGroomingRouter = require('./routes/grooming');
 const publicBreedingRouter = require('./routes/breeding');
 const publicPlansRouter = require('./routes/plans');
+const aiRouter = require('./routes/ai');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -76,6 +77,7 @@ app.use('/api/admin/grooming', adminGroomingRouter);
 app.use('/api/admin/plans', adminPlansRouter);
 app.use('/api/admin/users', adminUsersRouter);
 app.use('/api/admin/dashboard', adminDashboardRouter);
+app.use('/api/ai', aiRouter);
 
 // 404 handler
 app.use('*', (req, res) => {

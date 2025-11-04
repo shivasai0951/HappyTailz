@@ -176,6 +176,7 @@
     { "name": "Admin - Plans" },
     { "name": "Admin - Users" },
     { "name": "Admin - Dashboard" },
+    { "name": "AI" },
     { "name": "Misc" }
   ],
   "paths": {
@@ -185,6 +186,43 @@
         "tags": ["Misc"],
         "responses": {
           "200": { "description": "OK" }
+        }
+      }
+    },
+    "/api/ai/breed": {
+      "post": {
+        "summary": "Identify pet breed from image",
+        "tags": ["AI"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["image"],
+                "properties": {
+                  "image": { "type": "string", "format": "binary", "description": "Image file (field: image)" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "breed": { "type": "string", "description": "Detected breed name" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Internal Server Error" }
         }
       }
     },
