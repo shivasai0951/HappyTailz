@@ -26,7 +26,7 @@ router.get('/', requireAuth, async (req, res) => {
       ? upcomingReq
       : await WalkingRequest.findOne({ user: userId })
           .sort({ scheduleAt: -1 })
-          .populate('plan');
+          .populate('pet driver plan');
 
     let planSummary = null;
     let hasPlan = false;
@@ -58,6 +58,11 @@ router.get('/', requireAuth, async (req, res) => {
     // Pets summary
     const pets = await Pet.find({ ownerId: userId });
 
+    let currentData = upcomingReq || null;
+    if (!currentData && planSummary && planSummary.isActive) {
+      currentData = latestReq || null;
+    }
+
     res.json({
       hasPlan,
       plan: planSummary,
@@ -66,7 +71,7 @@ router.get('/', requireAuth, async (req, res) => {
         items: pets
       },
       walkingRequests: {
-        current: upcomingReq || null,
+        current: currentData,
         completedCount
       }
     });
